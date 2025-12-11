@@ -9,3 +9,4 @@ google-auth-httplib2
 google-generativeai
 python-dotenv
 eventlet
+gunicorn
