@@ -1,5 +1,4 @@
 import React, { useState, useEffect } from 'react';
-import api from '../api';
 
 export default function AdminModal({ onClose }) {
     const [settings, setSettings] = useState({ ai_frequency: 5, ai_personality: 'Helpful and polite' });
@@ -7,27 +6,24 @@ export default function AdminModal({ onClose }) {
     const [saving, setSaving] = useState(false);
 
     useEffect(() => {
-        api.get('/admin/settings')
-            .then(res => {
-                // default if keys missing
-                setSettings({
-                    ai_frequency: res.data.ai_frequency || 5,
-                    ai_personality: res.data.ai_personality || 'Helpful and polite'
-                });
-            })
-            .catch(console.error)
-            .finally(() => setLoading(false));
+        const savedSettings = localStorage.getItem('chatia_admin_settings');
+        if (savedSettings) {
+            setSettings(JSON.parse(savedSettings));
+        }
+        setLoading(false);
     }, []);
 
-    const handleSubmit = async (e) => {
+    const handleSubmit = (e) => {
         e.preventDefault();
         setSaving(true);
         try {
-            await api.post('/admin/settings', settings);
-            onClose();
+            localStorage.setItem('chatia_admin_settings', JSON.stringify(settings));
+            setTimeout(() => {
+                setSaving(false);
+                onClose();
+            }, 300);
         } catch (err) {
             alert('Error updating settings');
-        } finally {
             setSaving(false);
         }
     };

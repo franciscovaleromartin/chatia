@@ -1,19 +1,12 @@
 services:
-  - type: web
+  - type: static
     name: chatia
-    env: python
+    env: node
     region: oregon
     plan: free
-    buildCommand: "pwd && ls -la && bash build.sh"
-    startCommand: "cd backend && gunicorn --worker-class eventlet -w 1 app:app --bind 0.0.0.0:$PORT"
-    envVars:
-      - key: DATABASE_URL
-        value: sqlite:///chatia.db
-      - key: SECRET_KEY
-        generateValue: true
-      - key: GOOGLE_CLIENT_ID
-        sync: false
-      - key: GOOGLE_CLIENT_SECRET
-        sync: false
-      - key: GEMINI_API_KEY
-        sync: false
+    buildCommand: "cd frontend && npm install && npm run build"
+    staticPublishPath: frontend/dist
+    routes:
+      - type: rewrite
+        source: /*
+        destination: /index.html

@@ -1,10 +1,10 @@
 import React, { useEffect, useState } from 'react';
 import { NavLink, useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
-import api from '../api';
 import { FiPlus, FiSettings, FiUser, FiLogOut } from 'react-icons/fi';
 import ProfileModal from './ProfileModal';
 import AdminModal from './AdminModal';
+import { getAllChats, createChat as createMockChat } from '../mockData';
 
 export default function Sidebar({ refreshTrigger }) {
     const { user, logout } = useAuth();
@@ -14,7 +14,12 @@ export default function Sidebar({ refreshTrigger }) {
     const navigate = useNavigate();
 
     const fetchChats = () => {
-        api.get('/chats').then(res => setChats(res.data)).catch(console.error);
+        try {
+            const allChats = getAllChats();
+            setChats(allChats);
+        } catch (e) {
+            console.error(e);
+        }
     };
 
     useEffect(() => {
@@ -24,13 +29,13 @@ export default function Sidebar({ refreshTrigger }) {
         return () => clearInterval(interval);
     }, [refreshTrigger]);
 
-    const createChat = async () => {
+    const createChat = () => {
         const name = prompt("Enter chat name:");
         if (name) {
             try {
-                const res = await api.post('/chats', { name });
+                const newChat = createMockChat(name);
                 fetchChats();
-                navigate(`/chat/${res.data.id}`);
+                navigate(`/chat/${newChat.id}`);
             } catch (e) {
                 alert("Failed to create chat");
             }
