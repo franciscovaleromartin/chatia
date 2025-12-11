@@ -1,34 +1,44 @@
 import React, { createContext, useState, useEffect, useContext } from 'react';
-import api from '../api';
 
 const AuthContext = createContext(null);
+
+// Mock user data for demo
+const MOCK_USER = {
+    id: 1,
+    email: 'demo@chatia.com',
+    name: 'Demo User',
+    is_admin: false
+};
 
 export const AuthProvider = ({ children }) => {
     const [user, setUser] = useState(null);
     const [loading, setLoading] = useState(true);
 
     useEffect(() => {
-        // Check if user is logged in
-        api.get('/../auth/check') // Relative to /api baseUrl is tricky, so just use axios or full path
-            .then(res => {
-                if (res.data.authenticated) {
-                    setUser(res.data.user);
-                } else {
-                    setUser(null);
-                }
-            })
-            .catch(() => setUser(null))
-            .finally(() => setLoading(false));
+        // Simulate loading and auto-login for demo
+        setTimeout(() => {
+            const savedUser = localStorage.getItem('chatia_demo_user');
+            if (savedUser) {
+                setUser(JSON.parse(savedUser));
+            }
+            setLoading(false);
+        }, 500);
     }, []);
 
-    const logout = async () => {
-        await api.get('/../auth/logout');
+    const login = (email, password) => {
+        // Mock login - always succeeds in demo mode
+        localStorage.setItem('chatia_demo_user', JSON.stringify(MOCK_USER));
+        setUser(MOCK_USER);
+    };
+
+    const logout = () => {
+        localStorage.removeItem('chatia_demo_user');
         setUser(null);
         window.location.href = '/login';
     };
 
     return (
-        <AuthContext.Provider value={{ user, setUser, loading, logout }}>
+        <AuthContext.Provider value={{ user, setUser, loading, logout, login }}>
             {!loading && children}
         </AuthContext.Provider>
     );

@@ -1,5 +1,4 @@
 import React, { useState } from 'react';
-import api from '../api';
 import { useAuth } from '../context/AuthContext';
 
 export default function ProfileModal({ onClose }) {
@@ -8,16 +7,19 @@ export default function ProfileModal({ onClose }) {
     const [pic, setPic] = useState(user?.profile_pic || '');
     const [saving, setSaving] = useState(false);
 
-    const handleSubmit = async (e) => {
+    const handleSubmit = (e) => {
         e.preventDefault();
         setSaving(true);
         try {
-            await api.post('/user/update', { name, profile_pic: pic });
-            setUser({ ...user, name, profile_pic: pic });
-            onClose();
+            const updatedUser = { ...user, name, profile_pic: pic };
+            localStorage.setItem('chatia_demo_user', JSON.stringify(updatedUser));
+            setUser(updatedUser);
+            setTimeout(() => {
+                setSaving(false);
+                onClose();
+            }, 300);
         } catch (err) {
             alert('Error updating profile');
-        } finally {
             setSaving(false);
         }
     };

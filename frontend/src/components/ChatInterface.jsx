@@ -1,9 +1,9 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { useParams } from 'react-router-dom';
-import api from '../api';
 import { useAuth } from '../context/AuthContext';
-import { FiSend, FiImage, FiCpu, FiMoreVertical } from 'react-icons/fi';
+import { FiSend, FiImage, FiCpu } from 'react-icons/fi';
 import { format } from 'date-fns';
+import { getAllMessagesForChat, addMessage, MOCK_CHATS } from '../mockData';
 
 export default function ChatInterface({ onMessageSent }) {
     const { chatId } = useParams();
@@ -18,19 +18,11 @@ export default function ChatInterface({ onMessageSent }) {
         messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
     };
 
-    const fetchMessages = async () => {
+    const fetchMessages = () => {
         try {
-            const res = await api.get(`/chats/${chatId}/messages`);
-            // check if new messages to avoid scroll jitter? 
-            // simple check: length
-            if (res.data.length !== messages.length) {
-                setMessages(res.data);
-                setTimeout(scrollToBottom, 100);
-            } else {
-                // Update anyway for timestamps/content changes?
-                // just set
-                setMessages(res.data);
-            }
+            const chatMessages = getAllMessagesForChat(chatId);
+            setMessages(chatMessages);
+            setTimeout(scrollToBottom, 100);
         } catch (e) {
             console.error(e);
         } finally {
@@ -38,17 +30,11 @@ export default function ChatInterface({ onMessageSent }) {
         }
     };
 
-    const fetchChatInfo = async () => {
-        // Need an endpoint for single chat info or inferred from list.
-        // For now we only check AI status via toggle endpoint or assumption?
-        // Actually API didn't expose "get single chat info" correctly in my implementation plan, 
-        // but Sidebar fetches list.
-        // I can assume AI status or fetch it.
-        // I'll assume default true or try to fetch if I add the endpoint.
-        // Let's implement a 'get chat state' poll or just separate endpoint?
-        // User requirement: "boton donde conectar y desconectar a la IA".
-        // I added /chats/:id/ai endpoint (POST). I might need GET.
-        // For now, I'll default to enabled and maybe update if I add the GET endpoint.
+    const fetchChatInfo = () => {
+        const chat = MOCK_CHATS.find(c => c.id === chatId);
+        if (chat) {
+            setAiEnabled(chat.ai_enabled);
+        }
     };
 
     useEffect(() => {
@@ -56,21 +42,21 @@ export default function ChatInterface({ onMessageSent }) {
         setMessages([]);
         fetchMessages();
         fetchChatInfo();
-        const interval = setInterval(fetchMessages, 3000); // Poll every 3s
+        const interval = setInterval(fetchMessages, 2000); // Poll every 2s to catch AI responses
         return () => clearInterval(interval);
     }, [chatId]);
 
-    const handleSend = async (e) => {
+    const handleSend = (e) => {
         e.preventDefault();
         if (!newMessage.trim()) return;
 
         try {
-            await api.post(`/chats/${chatId}/messages`, { content: newMessage });
+            addMessage(chatId, newMessage);
             setNewMessage('');
-            fetchMessages();
-            onMessageSent();
+            setTimeout(fetchMessages, 100);
+            if (onMessageSent) onMessageSent();
         } catch (err) {
-            alert('Failed to send');
+            console.error('Failed to send', err);
         }
     };
 
@@ -78,28 +64,25 @@ export default function ChatInterface({ onMessageSent }) {
         const file = e.target.files[0];
         if (file) {
             const reader = new FileReader();
-            reader.onloadend = async () => {
+            reader.onloadend = () => {
                 try {
-                    // Send as Base64 in image_url (hack for MVP)
-                    await api.post(`/chats/${chatId}/messages`, { image_url: reader.result });
-                    fetchMessages();
-                    onMessageSent();
+                    addMessage(chatId, '', reader.result);
+                    setTimeout(fetchMessages, 100);
+                    if (onMessageSent) onMessageSent();
                 } catch (err) {
-                    alert('Failed to upload image');
+                    console.error('Failed to upload image', err);
                 }
             };
             reader.readAsDataURL(file);
         }
     };
 
-    const toggleAI = async () => {
-        try {
-            const newState = !aiEnabled;
-            setAiEnabled(newState);
-            await api.post(`/chats/${chatId}/ai`, { enabled: newState });
-        } catch (e) {
-            setAiEnabled(!aiEnabled); // Revert
-            alert("Failed to toggle AI");
+    const toggleAI = () => {
+        const newState = !aiEnabled;
+        setAiEnabled(newState);
+        const chat = MOCK_CHATS.find(c => c.id === chatId);
+        if (chat) {
+            chat.ai_enabled = newState;
         }
     };
 

@@ -1,9 +1,12 @@
 import React from 'react';
+import { useAuth } from '../context/AuthContext';
 
 export default function Login() {
+    const { login } = useAuth();
+
     const handleLogin = () => {
-        // Redirect to backend auth endpoint
-        window.location.href = '/auth/login';
+        // Demo mode - auto login
+        login('demo@chatia.com', 'demo');
     };
 
     return (
@@ -28,13 +31,16 @@ export default function Login() {
                 <p style={{ color: 'var(--color-text-muted)', marginBottom: '2rem' }}>
                     Connect with AI and friends in a minimalist space.
                 </p>
+                <p style={{ fontSize: '0.9rem', color: 'var(--color-text-muted)', marginBottom: '1.5rem', backgroundColor: '#fff3cd', padding: '0.75rem', borderRadius: '8px', border: '1px solid #ffc107' }}>
+                    🎭 Demo Mode - Click to enter
+                </p>
 
                 <button
                     onClick={handleLogin}
                     className="btn btn-primary"
                     style={{ width: '100%', fontSize: '1.1rem', padding: '0.75rem' }}
                 >
-                    Login with Google
+                    Enter Demo
                 </button>
             </div>
         </div>
