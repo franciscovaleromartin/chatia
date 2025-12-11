@@ -1,12 +1,11 @@
 services:
   - type: web
     name: chatia
-    env: python
+    env: docker
     region: oregon
     plan: free
-    rootDirectory: . # Root level to access both folders
-    buildCommand: ./build.sh
-    startCommand: cd backend && gunicorn --worker-class eventlet -w 1 app:app
+    dockerfilePath: ./Dockerfile
+    dockerContext: .
     envVars:
       - key: FLASK_APP
         value: app.py
