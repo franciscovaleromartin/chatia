@@ -4,7 +4,7 @@ from authlib.integrations.flask_client import OAuth
 import os
 import secrets
 
-app = Flask(__name__, static_folder='frontend/dist', static_url_path='')
+app = Flask(__name__)
 app.secret_key = os.environ.get('SECRET_KEY', secrets.token_hex(32))
 
 # Configure CORS
@@ -76,14 +76,20 @@ app.register_blueprint(api)
 @app.route('/', defaults={'path': ''})
 @app.route('/<path:path>')
 def serve_frontend(path):
+    dist_dir = os.path.join(os.path.dirname(__file__), 'frontend', 'dist')
+
     # Try to serve the file from frontend/dist
     if path != '':
-        file_path = os.path.join(app.static_folder, path)
+        file_path = os.path.join(dist_dir, path)
         if os.path.exists(file_path) and os.path.isfile(file_path):
-            return send_from_directory(app.static_folder, path)
+            return send_from_directory(dist_dir, path)
 
     # Otherwise, serve index.html for React Router
-    return send_file(os.path.join(app.static_folder, 'index.html'))
+    index_path = os.path.join(dist_dir, 'index.html')
+    if os.path.exists(index_path):
+        return send_file(index_path)
+    else:
+        return f"Error: index.html not found at {index_path}", 404
 
 if __name__ == '__main__':
     port = int(os.environ.get('PORT', 10000))
