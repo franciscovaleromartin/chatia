@@ -1,4 +1,4 @@
-from flask import Flask, send_from_directory, send_file, redirect, url_for, session, jsonify, request
+from flask import Flask, send_from_directory, send_file, redirect, url_for, session, jsonify, request, Blueprint
 from flask_cors import CORS
 from authlib.integrations.flask_client import OAuth
 import os
@@ -27,13 +27,15 @@ google = oauth.register(
     }
 )
 
-# API Routes
-@app.route('/api/auth/google')
+# API Blueprint
+api = Blueprint('api', __name__, url_prefix='/api')
+
+@api.route('/auth/google')
 def google_login():
-    redirect_uri = url_for('google_callback', _external=True)
+    redirect_uri = url_for('api.google_callback', _external=True)
     return google.authorize_redirect(redirect_uri)
 
-@app.route('/api/auth/google/callback')
+@api.route('/auth/google/callback')
 def google_callback():
     try:
         token = google.authorize_access_token()
@@ -55,37 +57,33 @@ def google_callback():
         print(f"Error in Google callback: {str(e)}")
         return redirect('/login?error=auth_failed')
 
-@app.route('/api/auth/logout', methods=['POST'])
+@api.route('/auth/logout', methods=['POST'])
 def logout():
     session.pop('user', None)
     return jsonify({'message': 'Logged out successfully'}), 200
 
-@app.route('/api/auth/me')
+@api.route('/auth/me')
 def get_current_user():
     user = session.get('user')
     if user:
         return jsonify(user), 200
     return jsonify({'error': 'Not authenticated'}), 401
 
-# Catch-all route for frontend - Must be at the end
+# Register API Blueprint
+app.register_blueprint(api)
+
+# Catch-all route for frontend - Must be registered AFTER API Blueprint
 @app.route('/', defaults={'path': ''})
 @app.route('/<path:path>')
-def serve_static(path):
-    # Don't intercept API routes
-    if path.startswith('api/'):
-        return jsonify({'error': 'Not found'}), 404
-
-    # If path is empty, serve index.html
-    if path == '':
-        return send_file('frontend/dist/index.html')
-
+def serve_frontend(path):
     # Try to serve the file from frontend/dist
-    file_path = os.path.join('frontend/dist', path)
-    if os.path.exists(file_path) and os.path.isfile(file_path):
-        return send_from_directory('frontend/dist', path)
+    if path != '':
+        file_path = os.path.join(app.static_folder, path)
+        if os.path.exists(file_path) and os.path.isfile(file_path):
+            return send_from_directory(app.static_folder, path)
 
-    # If file doesn't exist, return index.html for React Router
-    return send_file('frontend/dist/index.html')
+    # Otherwise, serve index.html for React Router
+    return send_file(os.path.join(app.static_folder, 'index.html'))
 
 if __name__ == '__main__':
     port = int(os.environ.get('PORT', 10000))
