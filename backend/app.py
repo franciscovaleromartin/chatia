@@ -52,7 +52,23 @@ def create_app():
         if os.path.exists(os.path.join(app.static_folder, 'index.html')):
              return app.send_static_file('index.html')
         else:
-             return f"Error: index.html not found in {app.static_folder}", 404
+             # Debug info
+             debug_info = f"<p>Search Path: {app.static_folder}</p>"
+             frontend_dir = os.path.join(os.path.abspath(os.path.dirname(__file__)), '..', 'frontend')
+             if os.path.exists(frontend_dir):
+                 try:
+                     contents = os.listdir(frontend_dir)
+                     debug_info += f"<p>Contents of frontend dir: {contents}</p>"
+                     dist_path = os.path.join(frontend_dir, 'dist')
+                     if os.path.exists(dist_path):
+                         dist_contents = os.listdir(dist_path)
+                         debug_info += f"<p>Contents of dist dir: {dist_contents}</p>"
+                 except Exception as e:
+                     debug_info += f"<p>Error listing dir: {e}</p>"
+             else:
+                 debug_info += "<p>Frontend dir does not exist</p>"
+                 
+             return f"<h1>Error: index.html not found</h1>{debug_info}", 404
 
     @app.route('/<path:path>')
     def serve_static(path):
