@@ -37,10 +37,16 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
 WORKDIR /app
 
 # Copy Frontend Build
+RUN echo "=== Copying frontend build from builder stage ===" && \
+    echo "Contents of builder stage /app/frontend/dist should be copied now..."
 COPY --from=frontend-builder /app/frontend/dist ./frontend/dist
 
 # Verify frontend files were copied
-RUN ls -la ./frontend/dist/ && test -f ./frontend/dist/index.html || (echo "ERROR: Frontend build files not found!" && exit 1)
+RUN echo "=== Verifying frontend files in final image ===" && \
+    ls -la ./frontend/ && \
+    ls -la ./frontend/dist/ && \
+    test -f ./frontend/dist/index.html || (echo "ERROR: Frontend build files not found after copy!" && exit 1) && \
+    echo "=== Frontend files successfully copied to final image ==="
 
 # Install Backend Deps
 COPY backend/requirements.txt ./backend/
@@ -50,8 +56,12 @@ RUN pip install --no-cache-dir -r requirements.txt
 # Copy Backend Code
 COPY backend/ .
 
+# Copy entrypoint script
+COPY docker-entrypoint.sh /app/
+RUN chmod +x /app/docker-entrypoint.sh
+
 # Expose port (Render uses PORT env var)
 EXPOSE 5000
 
-# Run - Use PORT env var if available, otherwise default to 5000
-CMD gunicorn --worker-class eventlet -w 1 app:app --bind 0.0.0.0:${PORT:-5000}
+# Use entrypoint script to verify build before starting
+ENTRYPOINT ["/app/docker-entrypoint.sh"]
