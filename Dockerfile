@@ -4,7 +4,7 @@ WORKDIR /app/frontend
 COPY frontend/package*.json ./
 RUN npm install
 COPY frontend/ .
-RUN npm run build
+RUN npm run build && ls -la dist/
 
 # Setup backend
 FROM python:3.10-slim
@@ -18,6 +18,9 @@ WORKDIR /app
 
 # Copy Frontend Build
 COPY --from=frontend-builder /app/frontend/dist ./frontend/dist
+
+# Verify frontend files were copied
+RUN ls -la ./frontend/dist/ && test -f ./frontend/dist/index.html || (echo "ERROR: Frontend build files not found!" && exit 1)
 
 # Install Backend Deps
 COPY backend/requirements.txt ./backend/
