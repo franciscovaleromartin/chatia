@@ -1,10 +1,30 @@
 # Build frontend
 FROM node:20-alpine AS frontend-builder
 WORKDIR /app/frontend
+
+# Copy package files and install dependencies
 COPY frontend/package*.json ./
-RUN npm install
-COPY frontend/ .
-RUN npm run build && ls -la dist/
+RUN echo "=== Installing dependencies ===" && \
+    npm ci && \
+    echo "=== Dependencies installed ==="
+
+# Copy all frontend source files
+COPY frontend/ ./
+
+# Verify source files are present
+RUN echo "=== Checking source files ===" && \
+    ls -la && \
+    test -f index.html || (echo "ERROR: index.html missing!" && exit 1) && \
+    test -d src || (echo "ERROR: src directory missing!" && exit 1) && \
+    echo "=== Source files OK ==="
+
+# Build and verify
+RUN echo "=== Starting frontend build ===" && \
+    npm run build && \
+    echo "=== Build complete, checking dist directory ===" && \
+    ls -la dist/ && \
+    test -f dist/index.html || (echo "ERROR: dist/index.html not created!" && exit 1) && \
+    echo "=== Frontend build successful ==="
 
 # Setup backend
 FROM python:3.10-slim
