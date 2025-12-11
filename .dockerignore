@@ -1,37 +1,24 @@
-# Dependencies
+# Dependencies (will be installed during build)
 **/node_modules
-**/npm-debug.log
 
-# Build outputs
-**/dist
-**/build
-**/.next
-**/.nuxt
-
-# Python
+# Python virtual environments
 **/__pycache__
 **/*.pyc
-**/*.pyo
-**/*.pyd
-.Python
 **/venv
 **/env
-**/.venv
 
-# IDE
+# IDE files
 .vscode
 .idea
-*.swp
-*.swo
-*~
 
-# OS
+# OS files
 .DS_Store
-Thumbs.db
 
 # Git
 .git
-.gitignore
 
-# Other
+# Build output (will be generated during build)
+frontend/dist
+
+# Logs
 *.log
