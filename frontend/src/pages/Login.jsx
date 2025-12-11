@@ -1,13 +1,9 @@
 import React from 'react';
 import { useAuth } from '../context/AuthContext';
+import { FaGoogle } from 'react-icons/fa';
 
 export default function Login() {
-    const { login } = useAuth();
-
-    const handleLogin = () => {
-        // Demo mode - auto login
-        login('demo@chatia.com', 'demo');
-    };
+    const { loginWithGoogle, loginDemo } = useAuth();
 
     return (
         <div style={{
@@ -31,14 +27,58 @@ export default function Login() {
                 <p style={{ color: 'var(--color-text-muted)', marginBottom: '2rem' }}>
                     Connect with AI and friends in a minimalist space.
                 </p>
-                <p style={{ fontSize: '0.9rem', color: 'var(--color-text-muted)', marginBottom: '1.5rem', backgroundColor: '#fff3cd', padding: '0.75rem', borderRadius: '8px', border: '1px solid #ffc107' }}>
-                    🎭 Demo Mode - Click to enter
+
+                <button
+                    onClick={loginWithGoogle}
+                    className="btn btn-primary"
+                    style={{
+                        width: '100%',
+                        fontSize: '1.1rem',
+                        padding: '0.75rem',
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        gap: '0.5rem',
+                        marginBottom: '1rem'
+                    }}
+                >
+                    <FaGoogle />
+                    Sign in with Google
+                </button>
+
+                <div style={{
+                    margin: '1.5rem 0',
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: '1rem'
+                }}>
+                    <div style={{ flex: 1, height: '1px', backgroundColor: 'var(--color-border)' }}></div>
+                    <span style={{ color: 'var(--color-text-muted)', fontSize: '0.875rem' }}>or</span>
+                    <div style={{ flex: 1, height: '1px', backgroundColor: 'var(--color-border)' }}></div>
+                </div>
+
+                <p style={{
+                    fontSize: '0.9rem',
+                    color: 'var(--color-text-muted)',
+                    marginBottom: '1rem',
+                    backgroundColor: '#fff3cd',
+                    padding: '0.75rem',
+                    borderRadius: '8px',
+                    border: '1px solid #ffc107'
+                }}>
+                    🎭 Demo Mode
                 </p>
 
                 <button
-                    onClick={handleLogin}
-                    className="btn btn-primary"
-                    style={{ width: '100%', fontSize: '1.1rem', padding: '0.75rem' }}
+                    onClick={loginDemo}
+                    className="btn"
+                    style={{
+                        width: '100%',
+                        fontSize: '1rem',
+                        padding: '0.75rem',
+                        backgroundColor: 'var(--color-surface-hover)',
+                        border: '1px solid var(--color-border)'
+                    }}
                 >
                     Enter Demo
                 </button>

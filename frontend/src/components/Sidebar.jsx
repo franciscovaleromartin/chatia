@@ -75,7 +75,7 @@ export default function Sidebar({ refreshTrigger }) {
             <div style={{ padding: '1rem', borderTop: '1px solid var(--color-border)', backgroundColor: 'var(--color-surface)' }}>
                 <div style={{ display: 'flex', alignItems: 'center', marginBottom: '0.5rem' }}>
                     <img
-                        src={user?.profile_pic || 'https://via.placeholder.com/40'}
+                        src={user?.picture || user?.profile_pic || 'https://via.placeholder.com/40'}
                         style={{ width: '40px', height: '40px', borderRadius: '50%', marginRight: '0.75rem', objectFit: 'cover' }}
                         alt="Profile"
                     />
