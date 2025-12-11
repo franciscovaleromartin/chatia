@@ -12,7 +12,7 @@ export default function ProfileModal({ onClose }) {
         setSaving(true);
         try {
             const updatedUser = { ...user, name, picture: pic };
-            localStorage.setItem('chatia_demo_user', JSON.stringify(updatedUser));
+            // Update user in memory (demo mode session only, Google OAuth managed by backend)
             setUser(updatedUser);
             setTimeout(() => {
                 setSaving(false);

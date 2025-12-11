@@ -25,11 +25,8 @@ export const AuthProvider = ({ children }) => {
             const response = await api.get('/auth/me');
             setUser(response.data);
         } catch (error) {
-            // Not authenticated or demo mode
-            const savedUser = localStorage.getItem('chatia_demo_user');
-            if (savedUser) {
-                setUser(JSON.parse(savedUser));
-            }
+            // Not authenticated - user must login
+            setUser(null);
         } finally {
             setLoading(false);
         }
@@ -41,8 +38,7 @@ export const AuthProvider = ({ children }) => {
     };
 
     const loginDemo = () => {
-        // Demo mode login
-        localStorage.setItem('chatia_demo_user', JSON.stringify(MOCK_USER));
+        // Demo mode login - session only (not persisted)
         setUser(MOCK_USER);
     };
 
@@ -52,7 +48,6 @@ export const AuthProvider = ({ children }) => {
         } catch (error) {
             console.error('Logout error:', error);
         }
-        localStorage.removeItem('chatia_demo_user');
         setUser(null);
         window.location.href = '/login';
     };
