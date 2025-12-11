@@ -10,9 +10,10 @@ from models import db, User
 load_dotenv()
 
 def create_app():
-    app = Flask(__name__)
-    CORS(app, resources={r"/*": {"origins": "*"}}) # Allow all origins for dev
-
+    # Configure static folder to point to frontend build
+    app = Flask(__name__, static_folder='../frontend/dist', static_url_path='')
+    CORS(app) # Simplifies dev, but in prod same-origin applies
+    
     # Configuration
     app.config['SECRET_KEY'] = os.environ.get('SECRET_KEY', 'dev_key')
     app.config['SQLALCHEMY_DATABASE_URI'] = os.environ.get('DATABASE_URL', 'sqlite:///chatia.db')
@@ -40,7 +41,16 @@ def create_app():
 
     @app.route('/')
     def index():
-        return jsonify({"message": "ChatIA Backend Running"})
+        return app.send_static_file('index.html')
+
+    @app.route('/<path:path>')
+    def serve_static(path):
+        # Check if file exists in static folder
+        full_path = os.path.join(app.static_folder, path)
+        if os.path.exists(full_path):
+            return app.send_static_file(path)
+        # Fallback to index.html for React Router
+        return app.send_static_file('index.html')
 
     return app
 

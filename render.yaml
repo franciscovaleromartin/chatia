@@ -1,13 +1,12 @@
 services:
-  # Backend
   - type: web
-    name: chatia-backend
+    name: chatia
     env: python
     region: oregon
     plan: free
-    rootDirectory: backend
-    buildCommand: pip install -r requirements.txt
-    startCommand: gunicorn --worker-class eventlet -w 1 app:app
+    rootDirectory: . # Root level to access both folders
+    buildCommand: ./build.sh
+    startCommand: cd backend && gunicorn --worker-class eventlet -w 1 app:app
     envVars:
       - key: FLASK_APP
         value: app.py
@@ -23,19 +22,5 @@ services:
         sync: false
       - key: GEMINI_API_KEY
         sync: false
-
-  # Frontend
-  - type: web
-    name: chatia-frontend
-    env: static
-    region: oregon
-    plan: free
-    rootDirectory: frontend
-    buildCommand: npm install && npm run build
-    staticPublishPath: ./dist
-    envVars:
-      - key: VITE_API_URL
-        fromService:
-          type: web
-          name: chatia-backend
-          property: url
+      - key: PYTHON_VERSION
+        value: 3.10.0
