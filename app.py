@@ -67,18 +67,24 @@ def get_current_user():
         return jsonify(user), 200
     return jsonify({'error': 'Not authenticated'}), 401
 
-# Frontend routes
-@app.route('/')
-def serve_index():
-    return send_file('frontend/dist/index.html')
-
+# Catch-all route for frontend - Must be at the end
+@app.route('/', defaults={'path': ''})
 @app.route('/<path:path>')
 def serve_static(path):
-    # Try to serve the file
+    # Don't intercept API routes
+    if path.startswith('api/'):
+        return jsonify({'error': 'Not found'}), 404
+
+    # If path is empty, serve index.html
+    if path == '':
+        return send_file('frontend/dist/index.html')
+
+    # Try to serve the file from frontend/dist
     file_path = os.path.join('frontend/dist', path)
     if os.path.exists(file_path) and os.path.isfile(file_path):
         return send_from_directory('frontend/dist', path)
-    # If file doesn't exist, return index.html (for React Router)
+
+    # If file doesn't exist, return index.html for React Router
     return send_file('frontend/dist/index.html')
 
 if __name__ == '__main__':
