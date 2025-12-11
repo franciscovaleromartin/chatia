@@ -10,9 +10,17 @@ from models import db, User
 load_dotenv()
 
 def create_app():
-    # Configure static folder to point to frontend build
-    app = Flask(__name__, static_folder='../frontend/dist', static_url_path='')
-    CORS(app) # Simplifies dev, but in prod same-origin applies
+    # Configure static folder to point to frontend build (Absolute Path)
+    base_dir = os.path.abspath(os.path.dirname(__file__))
+    frontend_dist = os.path.join(base_dir, '..', 'frontend', 'dist')
+    
+    if not os.path.exists(frontend_dist):
+        print(f"WARNING: Frontend build not found at {frontend_dist}")
+        # Create it if missing to avoid crash, but it will be empty
+        os.makedirs(frontend_dist, exist_ok=True)
+        
+    app = Flask(__name__, static_folder=frontend_dist, static_url_path='')
+    CORS(app)
     
     # Configuration
     app.config['SECRET_KEY'] = os.environ.get('SECRET_KEY', 'dev_key')
@@ -41,7 +49,10 @@ def create_app():
 
     @app.route('/')
     def index():
-        return app.send_static_file('index.html')
+        if os.path.exists(os.path.join(app.static_folder, 'index.html')):
+             return app.send_static_file('index.html')
+        else:
+             return f"Error: index.html not found in {app.static_folder}", 404
 
     @app.route('/<path:path>')
     def serve_static(path):
@@ -49,8 +60,11 @@ def create_app():
         full_path = os.path.join(app.static_folder, path)
         if os.path.exists(full_path):
             return app.send_static_file(path)
+        
         # Fallback to index.html for React Router
-        return app.send_static_file('index.html')
+        if os.path.exists(os.path.join(app.static_folder, 'index.html')):
+            return app.send_static_file('index.html')
+        return f"Error: index.html not found in {app.static_folder}", 404
 
     return app
 
