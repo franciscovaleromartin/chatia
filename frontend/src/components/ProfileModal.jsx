@@ -4,14 +4,14 @@ import { useAuth } from '../context/AuthContext';
 export default function ProfileModal({ onClose }) {
     const { user, setUser } = useAuth();
     const [name, setName] = useState(user?.name || '');
-    const [pic, setPic] = useState(user?.profile_pic || '');
+    const [pic, setPic] = useState(user?.picture || user?.profile_pic || '');
     const [saving, setSaving] = useState(false);
 
     const handleSubmit = (e) => {
         e.preventDefault();
         setSaving(true);
         try {
-            const updatedUser = { ...user, name, profile_pic: pic };
+            const updatedUser = { ...user, name, picture: pic };
             localStorage.setItem('chatia_demo_user', JSON.stringify(updatedUser));
             setUser(updatedUser);
             setTimeout(() => {
