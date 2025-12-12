@@ -144,7 +144,7 @@ export default function ChatInterface({ onMessageSent }) {
                             >
                                 {!isMe && (
                                     <div style={{ fontSize: '0.75rem', fontWeight: 600, marginBottom: '0.2rem', color: isAI ? 'var(--color-secondary)' : 'var(--color-text-muted)' }}>
-                                        {isAI ? 'AI' : `User ${msg.sender_id}`}
+                                        {isAI ? 'IA' : `User ${msg.sender_id}`}
                                     </div>
                                 )}
 
