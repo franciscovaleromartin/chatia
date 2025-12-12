@@ -25,7 +25,7 @@ export default function Login() {
             }}>
                 <h1 style={{ color: 'var(--color-primary)', marginBottom: '0.5rem' }}>ChatIA</h1>
                 <p style={{ color: 'var(--color-text-muted)', marginBottom: '2rem' }}>
-                    Connect with AI and friends in a minimalist space.
+                    Chatea con tus amigos y la IA
                 </p>
 
                 <button
