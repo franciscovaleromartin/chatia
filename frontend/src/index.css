@@ -84,3 +84,68 @@ body {
 .input:focus {
   border-color: var(--color-secondary);
 }
+
+/* Responsive Styles */
+@media (max-width: 768px) {
+  /* Show mobile menu button */
+  .mobile-menu-btn {
+    display: flex !important;
+  }
+
+  /* Show sidebar overlay when open */
+  .sidebar-overlay {
+    display: block !important;
+  }
+
+  /* Sidebar responsive behavior */
+  .sidebar {
+    position: fixed !important;
+    top: 0;
+    left: 0;
+    bottom: 0;
+    z-index: 1000;
+    width: 280px !important;
+    max-width: 85vw;
+    transform: translateX(-100%);
+    box-shadow: 2px 0 8px rgba(0, 0, 0, 0.15);
+  }
+
+  .sidebar.open {
+    transform: translateX(0);
+  }
+
+  /* Adjust chat message width on mobile */
+  .chat-message {
+    max-width: 85% !important;
+  }
+
+  /* Reduce padding on mobile */
+  #root {
+    padding: 0;
+    margin: 0;
+    max-width: 100%;
+  }
+}
+
+@media (max-width: 480px) {
+  /* Even smaller screens */
+  .sidebar {
+    width: 260px !important;
+  }
+
+  /* Stack buttons vertically on very small screens if needed */
+  .btn {
+    font-size: 0.9rem;
+  }
+
+  /* Smaller input on mobile */
+  .input {
+    font-size: 0.95rem;
+    padding: 0.65rem;
+  }
+
+  /* Adjust chat message width on very small screens */
+  .chat-message {
+    max-width: 90% !important;
+  }
+}
