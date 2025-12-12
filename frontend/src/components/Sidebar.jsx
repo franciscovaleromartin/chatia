@@ -6,7 +6,7 @@ import ProfileModal from './ProfileModal';
 import AdminModal from './AdminModal';
 import { getAllChats, createChat as createMockChat } from '../mockData';
 
-export default function Sidebar({ refreshTrigger }) {
+export default function Sidebar({ refreshTrigger, onChatSelect }) {
     const { user, logout } = useAuth();
     const [chats, setChats] = useState([]);
     const [showProfile, setShowProfile] = useState(false);
@@ -36,10 +36,16 @@ export default function Sidebar({ refreshTrigger }) {
                 const newChat = createMockChat(name);
                 fetchChats();
                 navigate(`/chat/${newChat.id}`);
+                if (onChatSelect) onChatSelect();
             } catch (e) {
                 alert("Failed to create chat");
             }
         }
+    };
+
+    const handleChatClick = (chatId) => {
+        navigate(`/chat/${chatId}`);
+        if (onChatSelect) onChatSelect();
     };
 
     return (
@@ -55,6 +61,7 @@ export default function Sidebar({ refreshTrigger }) {
                     <NavLink
                         key={chat.id}
                         to={`/chat/${chat.id}`}
+                        onClick={() => handleChatClick(chat.id)}
                         style={({ isActive }) => ({
                             display: 'block',
                             padding: '1rem',

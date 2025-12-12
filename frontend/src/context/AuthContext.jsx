@@ -3,14 +3,6 @@ import api from '../api';
 
 const AuthContext = createContext(null);
 
-// Mock user data for demo mode fallback
-const MOCK_USER = {
-    id: 1,
-    email: 'demo@chatia.com',
-    name: 'Demo User',
-    is_admin: false
-};
-
 export const AuthProvider = ({ children }) => {
     const [user, setUser] = useState(null);
     const [loading, setLoading] = useState(true);
@@ -37,11 +29,6 @@ export const AuthProvider = ({ children }) => {
         window.location.href = '/api/auth/google';
     };
 
-    const loginDemo = () => {
-        // Demo mode login - session only (not persisted)
-        setUser(MOCK_USER);
-    };
-
     const logout = async () => {
         try {
             await api.post('/auth/logout');
@@ -58,8 +45,7 @@ export const AuthProvider = ({ children }) => {
             setUser,
             loading,
             logout,
-            loginWithGoogle,
-            loginDemo
+            loginWithGoogle
         }}>
             {!loading && children}
         </AuthContext.Provider>

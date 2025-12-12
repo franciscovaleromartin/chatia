@@ -42,12 +42,13 @@ def google_callback():
         user_info = token.get('userinfo')
 
         if user_info:
+            user_email = user_info.get('email')
             session['user'] = {
                 'id': user_info.get('sub'),
-                'email': user_info.get('email'),
+                'email': user_email,
                 'name': user_info.get('name'),
                 'picture': user_info.get('picture'),
-                'is_admin': False  # You can add admin logic here
+                'is_admin': user_email == 'correodefranciscovalero@gmail.com'
             }
             # Redirect to frontend after successful login
             return redirect('/')

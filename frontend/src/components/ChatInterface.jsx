@@ -125,6 +125,7 @@ export default function ChatInterface({ onMessageSent }) {
                             }}
                         >
                             <div
+                                className="chat-message"
                                 style={{
                                     maxWidth: '70%',
                                     padding: '0.8rem 1rem',
