@@ -89,11 +89,11 @@ export const getMessagesForChat = (chatId) => {
 };
 
 // Helper to add a message (stored in localStorage)
-export const addMessage = (chatId, content, imageUrl = null) => {
+export const addMessage = (chatId, content, imageUrl = null, userId = null) => {
     const newMessage = {
         id: `m${Date.now()}`,
         chat_id: chatId,
-        sender_id: '1',
+        sender_id: userId || 'USER', // Use passed userId or 'USER' as fallback
         content: content,
         image_url: imageUrl,
         timestamp: new Date().toISOString()
@@ -107,12 +107,14 @@ export const addMessage = (chatId, content, imageUrl = null) => {
     // Generate AI response if AI is enabled
     const chat = MOCK_CHATS.find(c => c.id === chatId);
     if (chat && chat.ai_enabled && content.trim()) {
+        console.log('Sending message to AI:', content);
         // Call backend to get Gemini response
         api.post('/chat/message', {
             message: content,
             chat_id: chatId
         })
         .then(response => {
+            console.log('AI response received:', response.data);
             const aiResponse = {
                 id: `m${Date.now()}`,
                 chat_id: chatId,
@@ -125,12 +127,14 @@ export const addMessage = (chatId, content, imageUrl = null) => {
         })
         .catch(error => {
             console.error('Error getting AI response:', error);
-            // Fallback to simulated response if API fails
+            console.error('Error details:', error.response?.data);
+            // Fallback to error message with details
+            const errorMsg = error.response?.data?.error || 'Error desconocido al generar la respuesta';
             const aiResponse = {
                 id: `m${Date.now()}`,
                 chat_id: chatId,
                 sender_id: 'AI',
-                content: 'Lo siento, hubo un error al generar la respuesta. Por favor, intenta de nuevo.',
+                content: `⚠️ Error: ${errorMsg}`,
                 timestamp: new Date().toISOString()
             };
             const currentMessages = JSON.parse(localStorage.getItem(storageKey) || '[]');
