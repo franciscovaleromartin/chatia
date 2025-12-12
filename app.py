@@ -78,29 +78,51 @@ def get_current_user():
 
 @api.route('/chat/message', methods=['POST'])
 def send_chat_message():
+    print("=" * 50)
+    print("📨 Received chat message request")
     try:
         data = request.get_json()
+        print(f"📝 Request data: {data}")
+
         message = data.get('message')
         chat_id = data.get('chat_id')
 
+        print(f"💬 Message: {message}")
+        print(f"🆔 Chat ID: {chat_id}")
+
         if not message:
+            print("❌ No message provided")
             return jsonify({'error': 'Message is required'}), 400
 
         # Check if Gemini API is configured
         if not gemini_api_key:
+            print("❌ Gemini API key not configured")
             return jsonify({'error': 'Gemini API key not configured'}), 500
+
+        print("✅ Gemini API key is configured")
+        print("🤖 Calling Gemini API...")
 
         # Generate response using Gemini
         model = genai.GenerativeModel('gemini-pro')
         response = model.generate_content(message)
 
-        return jsonify({
+        print(f"✅ Gemini response received: {response.text[:100]}...")
+
+        result = {
             'response': response.text,
             'chat_id': chat_id
-        }), 200
+        }
+
+        print(f"📤 Sending response back to client")
+        print("=" * 50)
+
+        return jsonify(result), 200
 
     except Exception as e:
-        print(f"Error generating AI response: {str(e)}")
+        print(f"❌ Error generating AI response: {str(e)}")
+        import traceback
+        print(f"❌ Traceback: {traceback.format_exc()}")
+        print("=" * 50)
         return jsonify({'error': f'Failed to generate response: {str(e)}'}), 500
 
 # Register API Blueprint

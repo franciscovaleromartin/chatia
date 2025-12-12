@@ -106,15 +106,21 @@ export const addMessage = (chatId, content, imageUrl = null, userId = null) => {
 
     // Generate AI response if AI is enabled
     const chat = MOCK_CHATS.find(c => c.id === chatId);
+    console.log('Chat found:', chat);
+    console.log('AI enabled:', chat?.ai_enabled);
+    console.log('Content:', content.trim());
+
     if (chat && chat.ai_enabled && content.trim()) {
-        console.log('Sending message to AI:', content);
+        console.log('✅ Sending message to AI:', content);
+        console.log('API URL:', '/chat/message');
+
         // Call backend to get Gemini response
         api.post('/chat/message', {
             message: content,
             chat_id: chatId
         })
         .then(response => {
-            console.log('AI response received:', response.data);
+            console.log('✅ AI response received:', response.data);
             const aiResponse = {
                 id: `m${Date.now()}`,
                 chat_id: chatId,
@@ -126,10 +132,13 @@ export const addMessage = (chatId, content, imageUrl = null, userId = null) => {
             localStorage.setItem(storageKey, JSON.stringify([...currentMessages, aiResponse]));
         })
         .catch(error => {
-            console.error('Error getting AI response:', error);
-            console.error('Error details:', error.response?.data);
+            console.error('❌ Error getting AI response:', error);
+            console.error('❌ Error details:', error.response?.data);
+            console.error('❌ Error status:', error.response?.status);
+            console.error('❌ Full error:', error);
+
             // Fallback to error message with details
-            const errorMsg = error.response?.data?.error || 'Error desconocido al generar la respuesta';
+            const errorMsg = error.response?.data?.error || error.message || 'Error desconocido al generar la respuesta';
             const aiResponse = {
                 id: `m${Date.now()}`,
                 chat_id: chatId,
@@ -139,6 +148,12 @@ export const addMessage = (chatId, content, imageUrl = null, userId = null) => {
             };
             const currentMessages = JSON.parse(localStorage.getItem(storageKey) || '[]');
             localStorage.setItem(storageKey, JSON.stringify([...currentMessages, aiResponse]));
+        });
+    } else {
+        console.log('⚠️ Not calling AI because:', {
+            chatFound: !!chat,
+            aiEnabled: chat?.ai_enabled,
+            hasContent: !!content.trim()
         });
     }
 
