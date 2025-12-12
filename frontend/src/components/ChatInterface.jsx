@@ -3,7 +3,7 @@ import { useParams } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { FiSend, FiImage, FiCpu } from 'react-icons/fi';
 import { format } from 'date-fns';
-import { getAllMessagesForChat, addMessage, MOCK_CHATS } from '../mockData';
+import { getAllMessagesForChat, addMessage, getAllChats, updateChatAIState } from '../mockData';
 
 export default function ChatInterface({ onMessageSent }) {
     const { chatId } = useParams();
@@ -31,7 +31,8 @@ export default function ChatInterface({ onMessageSent }) {
     };
 
     const fetchChatInfo = () => {
-        const chat = MOCK_CHATS.find(c => c.id === chatId);
+        const allChats = getAllChats();
+        const chat = allChats.find(c => c.id === chatId);
         if (chat) {
             setAiEnabled(chat.ai_enabled);
         }
@@ -80,10 +81,7 @@ export default function ChatInterface({ onMessageSent }) {
     const toggleAI = () => {
         const newState = !aiEnabled;
         setAiEnabled(newState);
-        const chat = MOCK_CHATS.find(c => c.id === chatId);
-        if (chat) {
-            chat.ai_enabled = newState;
-        }
+        updateChatAIState(chatId, newState);
     };
 
     return (

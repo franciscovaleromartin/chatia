@@ -105,7 +105,8 @@ export const addMessage = (chatId, content, imageUrl = null, userId = null) => {
     localStorage.setItem(storageKey, JSON.stringify(updatedMessages));
 
     // Generate AI response if AI is enabled
-    const chat = MOCK_CHATS.find(c => c.id === chatId);
+    const allChats = getAllChats();
+    const chat = allChats.find(c => c.id === chatId);
     console.log('Chat found:', chat);
     console.log('AI enabled:', chat?.ai_enabled);
     console.log('Content:', content.trim());
@@ -191,4 +192,23 @@ export const getAllChats = () => {
     const storageKey = 'chatia_custom_chats';
     const customChats = JSON.parse(localStorage.getItem(storageKey) || '[]');
     return [...MOCK_CHATS, ...customChats];
+};
+
+// Update AI state for a chat
+export const updateChatAIState = (chatId, aiEnabled) => {
+    // Check if it's a mock chat
+    const mockChat = MOCK_CHATS.find(c => c.id === chatId);
+    if (mockChat) {
+        mockChat.ai_enabled = aiEnabled;
+        return;
+    }
+
+    // Otherwise, update in custom chats
+    const storageKey = 'chatia_custom_chats';
+    const customChats = JSON.parse(localStorage.getItem(storageKey) || '[]');
+    const chat = customChats.find(c => c.id === chatId);
+    if (chat) {
+        chat.ai_enabled = aiEnabled;
+        localStorage.setItem(storageKey, JSON.stringify(customChats));
+    }
 };
