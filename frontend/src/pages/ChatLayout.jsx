@@ -82,7 +82,7 @@ export default function ChatLayout() {
                 <Routes>
                     <Route path="/" element={
                         <div style={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'var(--color-text-muted)', padding: '1rem', textAlign: 'center' }}>
-                            Selecciopna una conversacíon o inicia una nueva
+                            Selecciona una conversacíón o inicia una nueva
                         </div>
                     } />
                     <Route path="/chat/:chatId" element={<ChatInterface onMessageSent={refreshChats} />} />
