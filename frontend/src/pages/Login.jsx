@@ -42,7 +42,7 @@ export default function Login() {
                     }}
                 >
                     <FaGoogle />
-                    Sign in with Google
+                    Conectar con Google
                 </button>
             </div>
         </div>

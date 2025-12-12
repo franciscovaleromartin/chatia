@@ -52,7 +52,7 @@ export default function Sidebar({ refreshTrigger, onChatSelect }) {
         <div style={{ display: 'flex', flexDirection: 'column', height: '100%' }}>
             <div style={{ padding: '1rem', borderBottom: '1px solid var(--color-border)' }}>
                 <button onClick={createChat} className="btn btn-primary" style={{ width: '100%' }}>
-                    <FiPlus style={{ marginRight: '0.5rem' }} /> New Chat
+                    <FiPlus style={{ marginRight: '0.5rem' }} /> Nuevo Chat
                 </button>
             </div>
 
