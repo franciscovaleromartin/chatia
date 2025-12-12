@@ -51,7 +51,7 @@ export default function ChatInterface({ onMessageSent }) {
         if (!newMessage.trim()) return;
 
         try {
-            addMessage(chatId, newMessage);
+            addMessage(chatId, newMessage, null, user?.id);
             setNewMessage('');
             setTimeout(fetchMessages, 100);
             if (onMessageSent) onMessageSent();
@@ -66,7 +66,7 @@ export default function ChatInterface({ onMessageSent }) {
             const reader = new FileReader();
             reader.onloadend = () => {
                 try {
-                    addMessage(chatId, '', reader.result);
+                    addMessage(chatId, '', reader.result, user?.id);
                     setTimeout(fetchMessages, 100);
                     if (onMessageSent) onMessageSent();
                 } catch (err) {
@@ -112,7 +112,7 @@ export default function ChatInterface({ onMessageSent }) {
             {/* Messages */}
             <div style={{ flex: 1, overflowY: 'auto', padding: '1rem', display: 'flex', flexDirection: 'column', gap: '1rem' }}>
                 {messages.map((msg, index) => {
-                    const isMe = msg.sender_id === String(user?.id);
+                    const isMe = msg.sender_id === String(user?.id) || msg.sender_id === 'USER';
                     const isAI = msg.sender_id === 'AI';
 
                     return (
