@@ -3,9 +3,15 @@ from flask_cors import CORS
 from authlib.integrations.flask_client import OAuth
 import os
 import secrets
+import google.generativeai as genai
 
 app = Flask(__name__)
 app.secret_key = os.environ.get('SECRET_KEY', secrets.token_hex(32))
+
+# Configure Gemini API
+gemini_api_key = os.environ.get('GEMINI_API_KEY')
+if gemini_api_key:
+    genai.configure(api_key=gemini_api_key)
 
 # Configure CORS
 CORS(app, resources={
@@ -69,6 +75,33 @@ def get_current_user():
     if user:
         return jsonify(user), 200
     return jsonify({'error': 'Not authenticated'}), 401
+
+@api.route('/chat/message', methods=['POST'])
+def send_chat_message():
+    try:
+        data = request.get_json()
+        message = data.get('message')
+        chat_id = data.get('chat_id')
+
+        if not message:
+            return jsonify({'error': 'Message is required'}), 400
+
+        # Check if Gemini API is configured
+        if not gemini_api_key:
+            return jsonify({'error': 'Gemini API key not configured'}), 500
+
+        # Generate response using Gemini
+        model = genai.GenerativeModel('gemini-pro')
+        response = model.generate_content(message)
+
+        return jsonify({
+            'response': response.text,
+            'chat_id': chat_id
+        }), 200
+
+    except Exception as e:
+        print(f"Error generating AI response: {str(e)}")
+        return jsonify({'error': f'Failed to generate response: {str(e)}'}), 500
 
 # Register API Blueprint
 app.register_blueprint(api)

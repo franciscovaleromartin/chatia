@@ -142,6 +142,11 @@ export default function ChatInterface({ onMessageSent }) {
                                     border: isMe ? 'none' : '1px solid var(--color-border)'
                                 }}
                             >
+                                {isMe && (
+                                    <div style={{ fontSize: '0.75rem', fontWeight: 600, marginBottom: '0.2rem', color: 'rgba(255, 255, 255, 0.9)' }}>
+                                        {user?.name || 'Tú'}
+                                    </div>
+                                )}
                                 {!isMe && (
                                     <div style={{ fontSize: '0.75rem', fontWeight: 600, marginBottom: '0.2rem', color: isAI ? 'var(--color-secondary)' : 'var(--color-text-muted)' }}>
                                         {isAI ? 'IA' : `User ${msg.sender_id}`}
