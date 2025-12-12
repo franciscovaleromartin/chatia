@@ -3,7 +3,7 @@ from flask_cors import CORS
 from authlib.integrations.flask_client import OAuth
 import os
 import secrets
-from openai import OpenAI
+import requests as http_requests
 
 app = Flask(__name__)
 app.secret_key = os.environ.get('SECRET_KEY', secrets.token_hex(32))
@@ -100,16 +100,33 @@ def send_chat_message():
         print("✅ OpenAI API key is configured")
         print("🤖 Calling OpenAI API (GPT-4)...")
 
-        # Generate response using OpenAI
-        client = OpenAI(api_key=openai_api_key)
-        completion = client.chat.completions.create(
-            model="gpt-4o-mini",  # Using gpt-4o-mini (fast and cheap)
-            messages=[
-                {"role": "user", "content": message}
+        # Generate response using OpenAI API directly
+        headers = {
+            'Authorization': f'Bearer {openai_api_key}',
+            'Content-Type': 'application/json'
+        }
+
+        payload = {
+            'model': 'gpt-4o-mini',
+            'messages': [
+                {'role': 'user', 'content': message}
             ]
+        }
+
+        response = http_requests.post(
+            'https://api.openai.com/v1/chat/completions',
+            headers=headers,
+            json=payload,
+            timeout=30
         )
 
-        response_text = completion.choices[0].message.content
+        if response.status_code != 200:
+            error_detail = response.json().get('error', {}).get('message', 'Unknown error')
+            print(f"❌ OpenAI API error: {error_detail}")
+            return jsonify({'error': f'OpenAI API error: {error_detail}'}), 500
+
+        response_data = response.json()
+        response_text = response_data['choices'][0]['message']['content']
 
         print(f"✅ OpenAI response received: {response_text[:100]}...")
 
