@@ -10,9 +10,6 @@ app.secret_key = os.environ.get('SECRET_KEY', secrets.token_hex(32))
 
 # Configure OpenAI API
 openai_api_key = os.environ.get('OPENAI_API_KEY')
-client = None
-if openai_api_key:
-    client = OpenAI(api_key=openai_api_key)
 
 # Configure CORS
 CORS(app, resources={
@@ -96,7 +93,7 @@ def send_chat_message():
             return jsonify({'error': 'Message is required'}), 400
 
         # Check if OpenAI API is configured
-        if not client:
+        if not openai_api_key:
             print("❌ OpenAI API key not configured")
             return jsonify({'error': 'OpenAI API key not configured'}), 500
 
@@ -104,6 +101,7 @@ def send_chat_message():
         print("🤖 Calling OpenAI API (GPT-4)...")
 
         # Generate response using OpenAI
+        client = OpenAI(api_key=openai_api_key)
         completion = client.chat.completions.create(
             model="gpt-4o-mini",  # Using gpt-4o-mini (fast and cheap)
             messages=[
