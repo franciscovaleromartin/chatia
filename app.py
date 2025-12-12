@@ -3,15 +3,16 @@ from flask_cors import CORS
 from authlib.integrations.flask_client import OAuth
 import os
 import secrets
-import google.generativeai as genai
+from openai import OpenAI
 
 app = Flask(__name__)
 app.secret_key = os.environ.get('SECRET_KEY', secrets.token_hex(32))
 
-# Configure Gemini API
-gemini_api_key = os.environ.get('GEMINI_API_KEY')
-if gemini_api_key:
-    genai.configure(api_key=gemini_api_key)
+# Configure OpenAI API
+openai_api_key = os.environ.get('OPENAI_API_KEY')
+client = None
+if openai_api_key:
+    client = OpenAI(api_key=openai_api_key)
 
 # Configure CORS
 CORS(app, resources={
@@ -94,22 +95,28 @@ def send_chat_message():
             print("❌ No message provided")
             return jsonify({'error': 'Message is required'}), 400
 
-        # Check if Gemini API is configured
-        if not gemini_api_key:
-            print("❌ Gemini API key not configured")
-            return jsonify({'error': 'Gemini API key not configured'}), 500
+        # Check if OpenAI API is configured
+        if not client:
+            print("❌ OpenAI API key not configured")
+            return jsonify({'error': 'OpenAI API key not configured'}), 500
 
-        print("✅ Gemini API key is configured")
-        print("🤖 Calling Gemini API...")
+        print("✅ OpenAI API key is configured")
+        print("🤖 Calling OpenAI API (GPT-4)...")
 
-        # Generate response using Gemini
-        model = genai.GenerativeModel('gemini-pro')
-        response = model.generate_content(message)
+        # Generate response using OpenAI
+        completion = client.chat.completions.create(
+            model="gpt-4o-mini",  # Using gpt-4o-mini (fast and cheap)
+            messages=[
+                {"role": "user", "content": message}
+            ]
+        )
 
-        print(f"✅ Gemini response received: {response.text[:100]}...")
+        response_text = completion.choices[0].message.content
+
+        print(f"✅ OpenAI response received: {response_text[:100]}...")
 
         result = {
-            'response': response.text,
+            'response': response_text,
             'chat_id': chat_id
         }
 
