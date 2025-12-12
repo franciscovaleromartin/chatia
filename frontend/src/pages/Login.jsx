@@ -1,6 +1,7 @@
 import React from 'react';
 import { useAuth } from '../context/AuthContext';
 import { FaGoogle } from 'react-icons/fa';
+import logo from '../assets/logo.png';
 
 export default function Login() {
     const { loginWithGoogle } = useAuth();
@@ -23,6 +24,15 @@ export default function Login() {
                 maxWidth: '400px',
                 width: '90%'
             }}>
+                <img
+                    src={logo}
+                    alt="ChatIA Logo"
+                    style={{
+                        width: '120px',
+                        height: 'auto',
+                        marginBottom: '1.5rem'
+                    }}
+                />
                 <h1 style={{ color: 'var(--color-primary)', marginBottom: '0.5rem' }}>ChatIA</h1>
                 <p style={{ color: 'var(--color-text-muted)', marginBottom: '2rem' }}>
                     Chatea con tus amigos y la IA
