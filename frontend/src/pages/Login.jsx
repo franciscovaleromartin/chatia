@@ -1,7 +1,7 @@
 import React from 'react';
 import { useAuth } from '../context/AuthContext';
 import { FaGoogle } from 'react-icons/fa';
-import logo from '../assets/logo.png';
+import logo from '../assets/ecco-logo.svg';
 
 export default function Login() {
     const { loginWithGoogle } = useAuth();
@@ -26,9 +26,9 @@ export default function Login() {
             }}>
                 <img
                     src={logo}
-                    alt="ChatIA Logo"
+                    alt="ECCO AI Logo"
                     style={{
-                        width: '120px',
+                        width: '200px',
                         height: 'auto',
                         marginBottom: '1.5rem'
                     }}

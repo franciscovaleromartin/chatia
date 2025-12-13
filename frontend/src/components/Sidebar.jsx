@@ -1,10 +1,10 @@
 import React, { useEffect, useState } from 'react';
 import { NavLink, useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
-import { FiPlus, FiSettings, FiUser, FiLogOut } from 'react-icons/fi';
+import { FiPlus, FiSettings, FiUser, FiLogOut, FiTrash2 } from 'react-icons/fi';
 import ProfileModal from './ProfileModal';
 import AdminModal from './AdminModal';
-import { getAllChats, createChat as createMockChat } from '../mockData';
+import { getAllChats, createChat as createMockChat, deleteChat } from '../mockData';
 
 export default function Sidebar({ refreshTrigger, onChatSelect }) {
     const { user, logout } = useAuth();
@@ -48,6 +48,29 @@ export default function Sidebar({ refreshTrigger, onChatSelect }) {
         if (onChatSelect) onChatSelect();
     };
 
+    const handleDeleteChat = (e, chatId) => {
+        e.preventDefault();
+        e.stopPropagation();
+
+        if (window.confirm('¿Estás seguro de que quieres eliminar este chat?')) {
+            try {
+                deleteChat(chatId);
+                fetchChats();
+                // If we're currently viewing this chat, navigate to first available chat
+                if (window.location.pathname.includes(chatId)) {
+                    const remainingChats = getAllChats().filter(c => c.id !== chatId);
+                    if (remainingChats.length > 0) {
+                        navigate(`/chat/${remainingChats[0].id}`);
+                    } else {
+                        navigate('/');
+                    }
+                }
+            } catch (error) {
+                alert(error.message || 'No se puede eliminar este chat');
+            }
+        }
+    };
+
     return (
         <div style={{ display: 'flex', flexDirection: 'column', height: '100%' }}>
             <div style={{ padding: '1rem', borderBottom: '1px solid var(--color-border)' }}>
@@ -57,26 +80,57 @@ export default function Sidebar({ refreshTrigger, onChatSelect }) {
             </div>
 
             <div style={{ flex: 1, overflowY: 'auto' }}>
-                {chats.map(chat => (
-                    <NavLink
-                        key={chat.id}
-                        to={`/chat/${chat.id}`}
-                        onClick={() => handleChatClick(chat.id)}
-                        style={({ isActive }) => ({
-                            display: 'block',
-                            padding: '1rem',
-                            textDecoration: 'none',
-                            color: isActive ? 'var(--color-primary)' : 'var(--color-text-main)',
-                            backgroundColor: isActive ? 'var(--color-surface-hover)' : 'transparent',
-                            borderLeft: isActive ? '3px solid var(--color-primary)' : '3px solid transparent'
-                        })}
-                    >
-                        <div style={{ fontWeight: 500 }}>{chat.name}</div>
-                        <div style={{ fontSize: '0.8rem', color: 'var(--color-text-muted)', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
-                            {chat.last_message || "No messages yet"}
-                        </div>
-                    </NavLink>
-                ))}
+                {chats.map(chat => {
+                    const isMockChat = ['1', '2', '3'].includes(chat.id);
+                    return (
+                        <NavLink
+                            key={chat.id}
+                            to={`/chat/${chat.id}`}
+                            onClick={() => handleChatClick(chat.id)}
+                            style={({ isActive }) => ({
+                                display: 'block',
+                                padding: '1rem',
+                                textDecoration: 'none',
+                                color: isActive ? 'var(--color-primary)' : 'var(--color-text-main)',
+                                backgroundColor: isActive ? 'var(--color-surface-hover)' : 'transparent',
+                                borderLeft: isActive ? '3px solid var(--color-primary)' : '3px solid transparent',
+                                position: 'relative'
+                            })}
+                        >
+                            <div style={{ display: 'flex', alignItems: 'start', justifyContent: 'space-between' }}>
+                                <div style={{ flex: 1, minWidth: 0 }}>
+                                    <div style={{ fontWeight: 500 }}>{chat.name}</div>
+                                    <div style={{ fontSize: '0.8rem', color: 'var(--color-text-muted)', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
+                                        {chat.last_message || "No messages yet"}
+                                    </div>
+                                </div>
+                                {!isMockChat && (
+                                    <button
+                                        onClick={(e) => handleDeleteChat(e, chat.id)}
+                                        style={{
+                                            background: 'none',
+                                            border: 'none',
+                                            color: '#ef4444',
+                                            cursor: 'pointer',
+                                            padding: '0.25rem',
+                                            marginLeft: '0.5rem',
+                                            display: 'flex',
+                                            alignItems: 'center',
+                                            justifyContent: 'center',
+                                            opacity: 0.7,
+                                            transition: 'opacity 0.2s'
+                                        }}
+                                        onMouseEnter={(e) => e.target.style.opacity = '1'}
+                                        onMouseLeave={(e) => e.target.style.opacity = '0.7'}
+                                        title="Eliminar chat"
+                                    >
+                                        <FiTrash2 size={16} />
+                                    </button>
+                                )}
+                            </div>
+                        </NavLink>
+                    );
+                })}
             </div>
 
             <div style={{ padding: '1rem', borderTop: '1px solid var(--color-border)', backgroundColor: 'var(--color-surface)' }}>
