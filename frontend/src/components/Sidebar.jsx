@@ -11,6 +11,9 @@ export default function Sidebar({ refreshTrigger, onChatSelect }) {
     const [chats, setChats] = useState([]);
     const [showProfile, setShowProfile] = useState(false);
     const [showAdmin, setShowAdmin] = useState(false);
+    const [swipedChat, setSwipedChat] = useState(null); // Track which chat is swiped
+    const [dragStart, setDragStart] = useState(null);
+    const [dragOffset, setDragOffset] = useState(0);
     const navigate = useNavigate();
 
     const fetchChats = () => {
@@ -48,13 +51,14 @@ export default function Sidebar({ refreshTrigger, onChatSelect }) {
         if (onChatSelect) onChatSelect();
     };
 
-    const handleDeleteChat = (e, chatId) => {
-        e.preventDefault();
-        e.stopPropagation();
+    const handleDeleteChat = (chatId, skipConfirm = false) => {
+        const shouldDelete = skipConfirm || window.confirm('¿Estás seguro de que quieres eliminar este chat?');
 
-        if (window.confirm('¿Estás seguro de que quieres eliminar este chat?')) {
+        if (shouldDelete) {
             try {
                 deleteChat(chatId);
+                setSwipedChat(null);
+                setDragOffset(0);
                 fetchChats();
                 // If we're currently viewing this chat, navigate to first available chat
                 if (window.location.pathname.includes(chatId)) {
@@ -68,7 +72,42 @@ export default function Sidebar({ refreshTrigger, onChatSelect }) {
             } catch (error) {
                 alert(error.message || 'No se puede eliminar este chat');
             }
+        } else {
+            setSwipedChat(null);
+            setDragOffset(0);
         }
+    };
+
+    const handleDragStart = (e, chatId) => {
+        const clientX = e.type.includes('touch') ? e.touches[0].clientX : e.clientX;
+        setDragStart({ x: clientX, chatId });
+    };
+
+    const handleDragMove = (e, chatId) => {
+        if (!dragStart || dragStart.chatId !== chatId) return;
+
+        const clientX = e.type.includes('touch') ? e.touches[0].clientX : e.clientX;
+        const offset = clientX - dragStart.x;
+
+        // Only allow dragging to the right (positive offset) and limit to 100px
+        if (offset > 0 && offset <= 100) {
+            setDragOffset(offset);
+            setSwipedChat(chatId);
+        }
+    };
+
+    const handleDragEnd = (chatId) => {
+        if (!dragStart) return;
+
+        // If dragged more than 70px, show delete button, otherwise reset
+        if (dragOffset > 70) {
+            setDragOffset(100);
+            setSwipedChat(chatId);
+        } else {
+            setDragOffset(0);
+            setSwipedChat(null);
+        }
+        setDragStart(null);
     };
 
     return (
@@ -79,56 +118,87 @@ export default function Sidebar({ refreshTrigger, onChatSelect }) {
                 </button>
             </div>
 
-            <div style={{ flex: 1, overflowY: 'auto' }}>
+            <div style={{ flex: 1, overflowY: 'auto', position: 'relative' }}>
                 {chats.map(chat => {
-                    const isMockChat = ['1', '2', '3'].includes(chat.id);
+                    const isSwiped = swipedChat === chat.id;
+                    const currentOffset = isSwiped ? dragOffset : 0;
+
                     return (
-                        <NavLink
+                        <div
                             key={chat.id}
-                            to={`/chat/${chat.id}`}
-                            onClick={() => handleChatClick(chat.id)}
-                            style={({ isActive }) => ({
-                                display: 'block',
-                                padding: '1rem',
-                                textDecoration: 'none',
-                                color: isActive ? 'var(--color-primary)' : 'var(--color-text-main)',
-                                backgroundColor: isActive ? 'var(--color-surface-hover)' : 'transparent',
-                                borderLeft: isActive ? '3px solid var(--color-primary)' : '3px solid transparent',
-                                position: 'relative'
-                            })}
+                            style={{
+                                position: 'relative',
+                                overflow: 'hidden'
+                            }}
                         >
-                            <div style={{ display: 'flex', alignItems: 'start', justifyContent: 'space-between' }}>
-                                <div style={{ flex: 1, minWidth: 0 }}>
-                                    <div style={{ fontWeight: 500 }}>{chat.name}</div>
-                                    <div style={{ fontSize: '0.8rem', color: 'var(--color-text-muted)', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
-                                        {chat.last_message || "No messages yet"}
-                                    </div>
-                                </div>
-                                {!isMockChat && (
-                                    <button
-                                        onClick={(e) => handleDeleteChat(e, chat.id)}
-                                        style={{
-                                            background: 'none',
-                                            border: 'none',
-                                            color: '#ef4444',
-                                            cursor: 'pointer',
-                                            padding: '0.25rem',
-                                            marginLeft: '0.5rem',
-                                            display: 'flex',
-                                            alignItems: 'center',
-                                            justifyContent: 'center',
-                                            opacity: 0.7,
-                                            transition: 'opacity 0.2s'
-                                        }}
-                                        onMouseEnter={(e) => e.target.style.opacity = '1'}
-                                        onMouseLeave={(e) => e.target.style.opacity = '0.7'}
-                                        title="Eliminar chat"
-                                    >
-                                        <FiTrash2 size={16} />
-                                    </button>
-                                )}
+                            {/* Delete button background */}
+                            <div
+                                style={{
+                                    position: 'absolute',
+                                    left: 0,
+                                    top: 0,
+                                    bottom: 0,
+                                    width: '100px',
+                                    backgroundColor: '#ef4444',
+                                    display: 'flex',
+                                    alignItems: 'center',
+                                    justifyContent: 'center',
+                                    color: 'white',
+                                    opacity: currentOffset > 0 ? 1 : 0,
+                                    transition: currentOffset === 100 ? 'opacity 0.2s' : 'none'
+                                }}
+                            >
+                                <button
+                                    onClick={() => handleDeleteChat(chat.id, true)}
+                                    style={{
+                                        background: 'none',
+                                        border: 'none',
+                                        color: 'white',
+                                        cursor: 'pointer',
+                                        padding: '0.5rem',
+                                        display: 'flex',
+                                        flexDirection: 'column',
+                                        alignItems: 'center',
+                                        fontSize: '0.75rem'
+                                    }}
+                                >
+                                    <FiTrash2 size={20} />
+                                    <span style={{ marginTop: '0.25rem' }}>Eliminar</span>
+                                </button>
                             </div>
-                        </NavLink>
+
+                            {/* Chat item */}
+                            <NavLink
+                                to={`/chat/${chat.id}`}
+                                onClick={() => handleChatClick(chat.id)}
+                                onMouseDown={(e) => handleDragStart(e, chat.id)}
+                                onMouseMove={(e) => handleDragMove(e, chat.id)}
+                                onMouseUp={() => handleDragEnd(chat.id)}
+                                onMouseLeave={() => handleDragEnd(chat.id)}
+                                onTouchStart={(e) => handleDragStart(e, chat.id)}
+                                onTouchMove={(e) => handleDragMove(e, chat.id)}
+                                onTouchEnd={() => handleDragEnd(chat.id)}
+                                style={({ isActive }) => ({
+                                    display: 'block',
+                                    padding: '1rem',
+                                    textDecoration: 'none',
+                                    color: isActive ? 'var(--color-primary)' : 'var(--color-text-main)',
+                                    backgroundColor: isActive ? 'var(--color-surface-hover)' : 'var(--color-surface)',
+                                    borderLeft: isActive ? '3px solid var(--color-primary)' : '3px solid transparent',
+                                    position: 'relative',
+                                    transform: `translateX(${currentOffset}px)`,
+                                    transition: dragStart?.chatId === chat.id ? 'none' : 'transform 0.3s ease',
+                                    cursor: 'pointer',
+                                    userSelect: 'none',
+                                    touchAction: 'pan-y'
+                                })}
+                            >
+                                <div style={{ fontWeight: 500 }}>{chat.name}</div>
+                                <div style={{ fontSize: '0.8rem', color: 'var(--color-text-muted)', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
+                                    {chat.last_message || "No messages yet"}
+                                </div>
+                            </NavLink>
+                        </div>
                     );
                 })}
             </div>

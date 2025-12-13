@@ -1,7 +1,7 @@
 import React from 'react';
 import { useAuth } from '../context/AuthContext';
 import { FaGoogle } from 'react-icons/fa';
-import logo from '../assets/ecco-logo.svg';
+import logo from '../assets/logo.png';
 
 export default function Login() {
     const { loginWithGoogle } = useAuth();

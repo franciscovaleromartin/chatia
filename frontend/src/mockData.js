@@ -196,17 +196,18 @@ export const getAllChats = () => {
 
 // Delete a chat
 export const deleteChat = (chatId) => {
-    // Don't allow deleting mock chats (predefined chats)
-    const isMockChat = MOCK_CHATS.some(c => c.id === chatId);
-    if (isMockChat) {
-        throw new Error('Cannot delete predefined chats');
+    // Check if it's a mock chat (predefined chat)
+    const mockChatIndex = MOCK_CHATS.findIndex(c => c.id === chatId);
+    if (mockChatIndex !== -1) {
+        // Remove from mock chats array
+        MOCK_CHATS.splice(mockChatIndex, 1);
+    } else {
+        // Remove from custom chats
+        const storageKey = 'chatia_custom_chats';
+        const customChats = JSON.parse(localStorage.getItem(storageKey) || '[]');
+        const updatedChats = customChats.filter(c => c.id !== chatId);
+        localStorage.setItem(storageKey, JSON.stringify(updatedChats));
     }
-
-    // Remove from custom chats
-    const storageKey = 'chatia_custom_chats';
-    const customChats = JSON.parse(localStorage.getItem(storageKey) || '[]');
-    const updatedChats = customChats.filter(c => c.id !== chatId);
-    localStorage.setItem(storageKey, JSON.stringify(updatedChats));
 
     // Remove messages for this chat
     const messagesKey = `chatia_messages_${chatId}`;
