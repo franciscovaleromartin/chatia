@@ -47,6 +47,9 @@ export default function Sidebar({ refreshTrigger, onChatSelect }) {
     };
 
     const handleChatClick = (chatId) => {
+        // Close any open swipe when clicking on a chat
+        setSwipedChat(null);
+        setDragOffset(0);
         navigate(`/chat/${chatId}`);
         if (onChatSelect) onChatSelect();
     };
@@ -89,8 +92,8 @@ export default function Sidebar({ refreshTrigger, onChatSelect }) {
         const clientX = e.type.includes('touch') ? e.touches[0].clientX : e.clientX;
         const offset = clientX - dragStart.x;
 
-        // Only allow dragging to the right (positive offset) and limit to 100px
-        if (offset > 0 && offset <= 100) {
+        // Only allow dragging to the left (negative offset) and limit to -100px
+        if (offset < 0 && offset >= -100) {
             setDragOffset(offset);
             setSwipedChat(chatId);
         }
@@ -99,9 +102,9 @@ export default function Sidebar({ refreshTrigger, onChatSelect }) {
     const handleDragEnd = (chatId) => {
         if (!dragStart) return;
 
-        // If dragged more than 70px, show delete button, otherwise reset
-        if (dragOffset > 70) {
-            setDragOffset(100);
+        // If dragged more than 70px to the left, show delete button, otherwise reset
+        if (dragOffset < -70) {
+            setDragOffset(-100);
             setSwipedChat(chatId);
         } else {
             setDragOffset(0);
@@ -135,7 +138,7 @@ export default function Sidebar({ refreshTrigger, onChatSelect }) {
                             <div
                                 style={{
                                     position: 'absolute',
-                                    left: 0,
+                                    right: 0,
                                     top: 0,
                                     bottom: 0,
                                     width: '100px',
@@ -144,8 +147,8 @@ export default function Sidebar({ refreshTrigger, onChatSelect }) {
                                     alignItems: 'center',
                                     justifyContent: 'center',
                                     color: 'white',
-                                    opacity: currentOffset > 0 ? 1 : 0,
-                                    transition: currentOffset === 100 ? 'opacity 0.2s' : 'none'
+                                    opacity: currentOffset < 0 ? 1 : 0,
+                                    transition: currentOffset === -100 ? 'opacity 0.2s' : 'none'
                                 }}
                             >
                                 <button
