@@ -194,6 +194,28 @@ export const getAllChats = () => {
     return [...MOCK_CHATS, ...customChats];
 };
 
+// Delete a chat
+export const deleteChat = (chatId) => {
+    // Check if it's a mock chat (predefined chat)
+    const mockChatIndex = MOCK_CHATS.findIndex(c => c.id === chatId);
+    if (mockChatIndex !== -1) {
+        // Remove from mock chats array
+        MOCK_CHATS.splice(mockChatIndex, 1);
+    } else {
+        // Remove from custom chats
+        const storageKey = 'chatia_custom_chats';
+        const customChats = JSON.parse(localStorage.getItem(storageKey) || '[]');
+        const updatedChats = customChats.filter(c => c.id !== chatId);
+        localStorage.setItem(storageKey, JSON.stringify(updatedChats));
+    }
+
+    // Remove messages for this chat
+    const messagesKey = `chatia_messages_${chatId}`;
+    localStorage.removeItem(messagesKey);
+
+    return true;
+};
+
 // Update AI state for a chat
 export const updateChatAIState = (chatId, aiEnabled) => {
     // Check if it's a mock chat

@@ -26,9 +26,9 @@ export default function Login() {
             }}>
                 <img
                     src={logo}
-                    alt="ChatIA Logo"
+                    alt="ECCO AI Logo"
                     style={{
-                        width: '120px',
+                        width: '200px',
                         height: 'auto',
                         marginBottom: '1.5rem'
                     }}
